@@ -14,19 +14,32 @@ void main() {
     expect(find.text('None yet'), findsNothing);
   });
 
-  testWidgets('Pay now prints Tapped', (WidgetTester tester) async {
-    final printed = <String>[];
-    final previous = debugPrint;
-    debugPrint = (String? message, {int? wrapWidth}) => printed.add('$message');
-    try {
-      await tester.pumpWidget(const InteractionsApp());
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Payment'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Pay now'));
-      expect(printed, ['Tapped']);
-    } finally {
-      debugPrint = previous;
-    }
+  testWidgets('Pay now morphs into the Plus sheet', (WidgetTester tester) async {
+    await tester.pumpWidget(const InteractionsApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Payment'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pay now'), findsOneWidget);
+    expect(find.text('Studio'), findsOneWidget);
+
+    await tester.tap(find.text('Pay now'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 900));
+    await tester.pumpAndSettle();
+
+    expect(tester.getSize(find.byKey(const Key('pay-surface'))).height, greaterThan(300));
+    expect(find.text('Do more with Plus'), findsOneWidget);
+    expect(find.text('Start yearly · \$50'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Monthly'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Monthly'));
+    await tester.pumpAndSettle();
+    expect(find.text('Start monthly · \$6'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('pay-close')));
+    await tester.pumpAndSettle();
+    expect(find.text('Pay now'), findsOneWidget);
   });
 }

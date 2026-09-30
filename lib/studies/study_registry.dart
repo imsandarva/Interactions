@@ -6,7 +6,7 @@ abstract final class StudyRegistry {
   static final studies = <Study>[
     Study(
       title: 'Payment',
-      note: 'A simple way to pay.',
+      note: 'Pay for Plus.',
       page: (_) => const PaymentScreen(),
     ),
   ];

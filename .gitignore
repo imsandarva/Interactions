@@ -64,6 +64,9 @@ android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
 **/*.keystore
 **/*.jks
 key.properties
+# Solo dev: track Interactions release signing (see android/SIGNING.md)
+!android/key.properties
+!android/app/upload-keystore.jks
 
 # --- iOS / macOS ---
 **/ios/Flutter/.last_build_id
