@@ -10,9 +10,7 @@ zinfo.md
 docs/rough_idea.md
 
 
-
-
-# Miscellaneous
+# --- Miscellaneous ---
 *.class
 *.log
 *.pyc
@@ -26,7 +24,7 @@ docs/rough_idea.md
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# --- IntelliJ / Android Studio ---
 *.iml
 *.ipr
 *.iws
@@ -37,10 +35,8 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
-# Flutter/Dart/Pub related
+# --- Flutter / Dart / Pub ---
 **/doc/api/
-**/ios/Flutter/.last_build_id
-**/ios/Flutter/flutter_export_environment.sh
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
@@ -48,43 +44,61 @@ migrate_working_dir/
 .packages
 .pub-cache/
 .pub/
-/build/
-
-# Symbolication related
+build/
+**/build/
+coverage/
+*.symbols
 app.*.symbols
-
-# Obfuscation related
 app.*.map
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# --- Android ---
+android/.gradle/
+android/local.properties
+android/.kotlin/
+android/captures/
+android/app/.cxx/
+android/app/debug/
+android/app/profile/
+android/app/release/
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+**/*.keystore
+**/*.jks
+key.properties
 
-# Sensitive Configuration Files
+# --- iOS / macOS ---
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/ephemeral/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/**/DerivedData/
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+**/macos/Flutter/ephemeral/
+
+# --- Desktop / web generated ---
+windows/flutter/ephemeral/
+linux/flutter/ephemeral/
+macos/Flutter/ephemeral/
+
+# --- Binary / archive outputs ---
+*.apk
+*.aab
+*.ipa
+*.app
+*.dmg
+*.zip
+
+# --- Sensitive configuration ---
 # Uncomment the line below if you want to protect real secret keys in production
 # lib/config/secret_keys.dart
 
-
-
-# Environment files
+# --- Environment files ---
 .env
 .env.local
 .env.production
 
-
-
-# Flutter build output
-build/
-**/build/
-
-# Dart tooling
-.dart_tool/
-.packages
-.pub/
-.pub-cache/
-
-# Plugin build artifacts (important for plugins like url_launcher)
+# --- Plugin build artifacts (e.g. url_launcher) ---
 **/url_launcher_*/build/
 
 # Android/Web/Windows/Mac/Linux auto-generated icons (NOT iOS - needed for Codemagic)
@@ -94,13 +108,4 @@ macos/Runner/Assets.xcassets/AppIcon.appiconset/
 web/icons/
 web/favicon.png
 
-
-
-
-android/.gradle/
-android/local.properties
-android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
-ios/Runner/GeneratedPluginRegistrant.h
-ios/Runner/GeneratedPluginRegistrant.m
-android/.kotlin/
-\nscreenshots/
+screenshots/
