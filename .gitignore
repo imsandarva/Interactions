@@ -1,0 +1,106 @@
+app_crash_files/
+
+
+.cursorrules
+.gemini/
+.cursor/
+zinfo.md
+
+
+docs/rough_idea.md
+
+
+
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/flutter_export_environment.sh
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.fvm/
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Sensitive Configuration Files
+# Uncomment the line below if you want to protect real secret keys in production
+# lib/config/secret_keys.dart
+
+
+
+# Environment files
+.env
+.env.local
+.env.production
+
+
+
+# Flutter build output
+build/
+**/build/
+
+# Dart tooling
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+
+# Plugin build artifacts (important for plugins like url_launcher)
+**/url_launcher_*/build/
+
+# Android/Web/Windows/Mac/Linux auto-generated icons (NOT iOS - needed for Codemagic)
+**/mipmap-*/launcher_icon.png
+windows/runner/resources/app_icon.ico
+macos/Runner/Assets.xcassets/AppIcon.appiconset/
+web/icons/
+web/favicon.png
+
+
+
+
+android/.gradle/
+android/local.properties
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+android/.kotlin/
+\nscreenshots/
