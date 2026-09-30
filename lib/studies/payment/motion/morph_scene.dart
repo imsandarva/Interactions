@@ -43,52 +43,30 @@ class MorphScene {
   );
 
   static MorphScene morph(double t, FrameMetrics frame) {
-    // Until [_asButton], width, bottom edge, and corners stay the button's,
-    // so the stretch reads as that pill growing. Color does not wait: it
-    // eases across the entire gesture, dark at the pill and paper at the
-    // sheet, and the collapse walks the same blend backward.
-    final become = _span(t, _asButton, 0.92);
-    final height = _height(t, frame.openHeight);
+    // Width, height, and color share one progress. Each is a fraction of its
+    // own travel, so they start together and arrive together. Collapse is the
+    // same line, played backward.
+    final height = _lerp(PayFrame.pillHeight, frame.openHeight, t);
     final cap = height / 2;
-    final mix = t;
-    final backdrop = _unit(t, _asButton, 1);
     return MorphScene(
       t: t,
-      marginH: _lerp(frame.side, 0, become),
-      marginBottom: _lerp(frame.restBottom, 0, become),
+      marginH: _lerp(frame.side, 0, t),
+      marginBottom: _lerp(frame.restBottom, 0, t),
       height: height,
-      topRadius: math.min(_lerp(PayFrame.pillRadius, PayFrame.sheetRadius, become), cap),
-      bottomRadius: math.min(_lerp(PayFrame.pillRadius, 0, _span(t, _asButton, 0.84)), cap),
-      surface: Color.lerp(PayColors.ink, PayColors.sheet, mix)!,
-      borderAlpha: mix,
+      topRadius: math.min(_lerp(PayFrame.pillRadius, PayFrame.sheetRadius, t), cap),
+      bottomRadius: math.min(_lerp(PayFrame.pillRadius, 0, t), cap),
+      surface: Color.lerp(PayColors.ink, PayColors.sheet, t)!,
+      borderAlpha: t,
       label: t >= 0.14 ? 0 : 1 - Curves.easeOut.transform(t / 0.14),
-      backdropScale: _lerp(1, PayFrame.backdropScale, backdrop),
-      backdropDim: 0.16 * backdrop,
-      backdropRadius: _lerp(0, 18, backdrop),
+      backdropScale: _lerp(1, PayFrame.backdropScale, t),
+      backdropDim: 0.16 * t,
+      backdropRadius: _lerp(0, 18, t),
       openHeight: frame.openHeight,
     );
   }
 }
 
-/// Progress at which the stretching pill is allowed to become the sheet.
-const _asButton = 0.5;
-
-double _height(double t, double sheet) {
-  const pill = PayFrame.pillHeight;
-  // Most of the travel, still wearing the button, so the stretch is obvious.
-  final tall = pill + (sheet - pill) * 0.58;
-  if (t <= _asButton) return _lerp(pill, tall, t / _asButton);
-  return _lerp(tall, sheet, (t - _asButton) / (1 - _asButton));
-}
-
 double _lerp(double a, double b, double t) => a + (b - a) * t;
-
-/// Linear 0 before [a], 1 after [b]. The spring already eases the clock.
-double _span(double t, double a, double b) {
-  if (t <= a) return 0;
-  if (t >= b) return 1;
-  return (t - a) / (b - a);
-}
 
 /// 0 before [a], 1 after [b], eased in between.
 double _unit(double t, double a, double b) {
