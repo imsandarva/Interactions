@@ -15,6 +15,7 @@ class PlacesStage extends StatelessWidget {
     required this.hidden,
     required this.stackKey,
     required this.scroll,
+    required this.offset,
     required this.frameKeys,
     required this.imageKeys,
     required this.focusNodes,
@@ -27,11 +28,12 @@ class PlacesStage extends StatelessWidget {
   final ValueNotifier<int?> hidden;
   final GlobalKey stackKey;
   final ScrollController scroll;
+  final ValueNotifier<double> offset;
   final List<GlobalKey> frameKeys;
   final List<GlobalKey> imageKeys;
   final List<FocusNode> focusNodes;
   final FocusNode titleFocus;
-  final ValueChanged<int> onOpen;
+  final void Function(int index, double photoShift) onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -100,6 +102,7 @@ class PlacesStage extends StatelessWidget {
       },
       child: PlacesFeed(
         scroll: scroll,
+        offset: offset,
         hidden: hidden,
         frameKeys: frameKeys,
         imageKeys: imageKeys,

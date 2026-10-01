@@ -1,6 +1,30 @@
 import 'package:flutter/widgets.dart';
 
-/// One place. [photo] is optional; until a real file is set, the tone is painted.
+/// A muted color taken from the cover, and the deeper version used for the button.
+class PlaceTone {
+  const PlaceTone({required this.tone, required this.deep});
+
+  final Color tone;
+  final Color deep;
+
+  /// Warm white with a few percent of [tone]. Felt, not seen.
+  Color surface(double amount) =>
+      Color.lerp(const Color(0xFFFFFCF8), tone, amount)!;
+}
+
+class PlacePhoto {
+  const PlacePhoto({
+    required this.asset,
+    required this.focal,
+    required this.credit,
+  });
+
+  final String asset;
+  final Alignment focal;
+  final String credit;
+}
+
+/// One place. The first photograph is the cover, until the list remembers another.
 class Place {
   const Place({
     required this.id,
@@ -13,7 +37,7 @@ class Place {
     required this.stay,
     required this.pace,
     required this.tone,
-    this.photo,
+    required this.photos,
   });
 
   final int id;
@@ -26,33 +50,28 @@ class Place {
   final String stay;
   final String pace;
   final PlaceTone tone;
-
-  /// Asset path, declared in pubspec, when a photograph replaces the tone.
-  final String? photo;
+  final List<PlacePhoto> photos;
 
   String get meta => '$country · $detail';
   String get label => '$title, $meta';
+
+  PlacePhoto photoAt(int index) => photos[index.clamp(0, photos.length - 1)];
 }
 
-class PlaceTone {
-  const PlaceTone({
-    required this.base,
-    required this.glow,
-    required this.shade,
-    required this.focal,
-    required this.seed,
-  });
+const _high = Alignment(0, -0.35);
+const _soft = Alignment(0, -0.08);
 
-  final Color base;
-  final Color glow;
-  final Color shade;
-  final Alignment focal;
-  final int seed;
+PlacePhoto _shot(String name, Alignment focal, String credit) {
+  return PlacePhoto(
+    asset: 'assets/places/$name.jpg',
+    focal: focal,
+    credit: credit,
+  );
 }
 
-/// Dummy places. Swap the words if you like; keep them short and quiet.
+/// Dummy places. The words stay quiet; the photographs are real.
 abstract final class Places {
-  static const all = <Place>[
+  static final all = <Place>[
     Place(
       id: 0,
       title: 'Quiet Hours in Kyoto',
@@ -67,13 +86,12 @@ abstract final class Places {
       bestTime: 'March to May',
       stay: '3 nights',
       pace: 'Slow',
-      tone: PlaceTone(
-        base: Color(0xFF6B5348),
-        glow: Color(0xFFE4C7B0),
-        shade: Color(0xFF3E322C),
-        focal: Alignment(0, -0.35),
-        seed: 11,
-      ),
+      tone: const PlaceTone(tone: Color(0xFF7A8470), deep: Color(0xFF3E4637)),
+      photos: [
+        _shot('kyoto_1', _high, 'Unsplash'),
+        _shot('kyoto_2', _soft, 'Thomas Bormans, Unsplash'),
+        _shot('kyoto_3', _high, 'Unsplash'),
+      ],
     ),
     Place(
       id: 1,
@@ -88,14 +106,13 @@ abstract final class Places {
       ],
       bestTime: 'May to October',
       stay: '2 nights',
-      pace: 'Unhurried',
-      tone: PlaceTone(
-        base: Color(0xFFE6D3B8),
-        glow: Color(0xFFF7F1E6),
-        shade: Color(0xFFC5D0D4),
-        focal: Alignment(0, -0.15),
-        seed: 23,
-      ),
+      pace: 'Slow',
+      tone: const PlaceTone(tone: Color(0xFF8FA3B0), deep: Color(0xFF3B4C58)),
+      photos: [
+        _shot('salt_1', _high, 'pgab, Unsplash'),
+        _shot('salt_2', _high, 'Andrea Huls Pareja, Unsplash'),
+        _shot('salt_3', _high, 'Matheus Oliveira, Unsplash'),
+      ],
     ),
     Place(
       id: 2,
@@ -110,14 +127,13 @@ abstract final class Places {
       ],
       bestTime: 'June to August',
       stay: '4 nights',
-      pace: 'Still',
-      tone: PlaceTone(
-        base: Color(0xFF8FA3A6),
-        glow: Color(0xFFD5E0E2),
-        shade: Color(0xFF3E5156),
-        focal: Alignment(0.1, -0.4),
-        seed: 37,
-      ),
+      pace: 'Very slow',
+      tone: const PlaceTone(tone: Color(0xFF5C7384), deep: Color(0xFF26394A)),
+      photos: [
+        _shot('fjord_1', _soft, 'Unsplash'),
+        _shot('fjord_2', _high, 'Unsplash'),
+        _shot('fjord_3', _high, 'Unsplash'),
+      ],
     ),
     Place(
       id: 3,
@@ -132,14 +148,13 @@ abstract final class Places {
       ],
       bestTime: 'April to June',
       stay: '3 nights',
-      pace: 'Gentle',
-      tone: PlaceTone(
-        base: Color(0xFF8A9A78),
-        glow: Color(0xFFD7E0C8),
-        shade: Color(0xFF3E4A38),
-        focal: Alignment(0, 0.05),
-        seed: 41,
-      ),
+      pace: 'Easy',
+      tone: const PlaceTone(tone: Color(0xFF7C9A5E), deep: Color(0xFF34502A)),
+      photos: [
+        _shot('rice_2', Alignment(0, 0.05), 'Unsplash'),
+        _shot('rice_1', _high, 'Silas Baisch, Unsplash'),
+        _shot('rice_3', _soft, 'Unsplash'),
+      ],
     ),
     Place(
       id: 4,
@@ -152,16 +167,15 @@ abstract final class Places {
         'You climb until the wind finds you. Then a small table, and the river in the distance.',
         'The hills do the pacing. You only have to follow them down again.',
       ],
-      bestTime: 'March to June',
+      bestTime: 'September to November',
       stay: '4 nights',
-      pace: 'Wandering',
-      tone: PlaceTone(
-        base: Color(0xFFC9A08C),
-        glow: Color(0xFFF0D9CC),
-        shade: Color(0xFF8C6558),
-        focal: Alignment(-0.2, -0.45),
-        seed: 53,
-      ),
+      pace: 'Easy',
+      tone: const PlaceTone(tone: Color(0xFFC98F6B), deep: Color(0xFF6B3E25)),
+      photos: [
+        _shot('lisbon_1', _soft, 'Unsplash'),
+        _shot('lisbon_2', _high, 'Unsplash'),
+        _shot('lisbon_3', _soft, 'Unsplash'),
+      ],
     ),
     Place(
       id: 5,
@@ -174,16 +188,25 @@ abstract final class Places {
         'A hut, a bowl of soup, and the long walk back down through the trees.',
         'The peaks stay lit a little after the valley has gone blue.',
       ],
-      bestTime: 'September',
-      stay: '3 nights',
-      pace: 'Steady',
-      tone: PlaceTone(
-        base: Color(0xFF9AA0A4),
-        glow: Color(0xFFE4E0D8),
-        shade: Color(0xFF5C6368),
-        focal: Alignment(0.15, -0.55),
-        seed: 67,
-      ),
+      bestTime: 'September to October',
+      stay: '5 nights',
+      pace: 'Active',
+      tone: const PlaceTone(tone: Color(0xFFA08C8F), deep: Color(0xFF4F3F46)),
+      photos: [
+        _shot('alps_1', _soft, 'Unsplash'),
+        _shot('alps_2', _high, 'Unsplash'),
+        _shot('alps_3', _high, 'Unsplash'),
+      ],
     ),
   ];
+
+  static String get credits {
+    final names = <String>{};
+    for (final place in all) {
+      for (final photo in place.photos) {
+        names.add(photo.credit);
+      }
+    }
+    return 'Photographs from Unsplash.';
+  }
 }

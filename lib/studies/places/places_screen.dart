@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 import 'package:interactions/app/system/system_chrome.dart';
 import 'package:interactions/studies/places/copy/places.dart';
+import 'package:interactions/studies/places/image/place_image.dart';
+import 'package:interactions/studies/places/memory/place_memory.dart';
 import 'package:interactions/studies/places/motion/place_flight.dart';
 import 'package:interactions/studies/places/motion/places_spec.dart';
 import 'package:interactions/studies/places/stage/places_stage.dart';
@@ -21,6 +23,7 @@ class _PlacesScreenState extends State<PlacesScreen>
   final _hidden = ValueNotifier<int?>(null);
   final _stackKey = GlobalKey();
   final _scroll = ScrollController();
+  final _offset = ValueNotifier(0.0);
   final _titleFocus = FocusNode(debugLabel: 'place-title');
   final _frameKeys = List<GlobalKey>.generate(
     Places.all.length,
@@ -43,7 +46,15 @@ class _PlacesScreenState extends State<PlacesScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _flight.addListener(_onFlight);
+    _scroll.addListener(_onScroll);
     SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp]);
+  }
+
+  void _onScroll() {
+    if (!_scroll.hasClients) return;
+    final next = _scroll.offset;
+    if ((next - _offset.value).abs() < 0.5) return;
+    _offset.value = next;
   }
 
   @override
@@ -53,9 +64,12 @@ class _PlacesScreenState extends State<PlacesScreen>
     _flight.adopt(MediaQuery.sizeOf(context));
     if (_warmed) return;
     _warmed = true;
+    final width = placeCacheWidth(context);
     for (final place in Places.all) {
-      final photo = place.photo;
-      if (photo != null) precacheImage(AssetImage(photo), context);
+      precacheImage(
+        ResizeImage(AssetImage(place.photos.first.asset), width: width),
+        context,
+      );
     }
   }
 
@@ -69,7 +83,14 @@ class _PlacesScreenState extends State<PlacesScreen>
     if (!_flight.active && _wasActive) {
       _focused = false;
       final index = _flight.index;
-      if (index != null) _focus(_cardFocus[index]);
+      if (index != null) {
+        PlaceMemory.instance.finishVisit(Places.all[index].id);
+        _focus(_cardFocus[index]);
+      }
+    }
+    if (_flight.active && !_wasActive) {
+      final index = _flight.index;
+      if (index != null) PlaceMemory.instance.beginVisit(Places.all[index].id);
     }
     _wasActive = _flight.active;
   }
@@ -80,14 +101,26 @@ class _PlacesScreenState extends State<PlacesScreen>
     });
   }
 
-  void _open(int index) {
+  void _open(int index, double photoShift) {
     if (_flight.active) return;
     if (_scroll.hasClients) _scroll.jumpTo(_scroll.offset);
     final rect = _rectFor(_frameKeys[index]);
     final image = _heightOf(_imageKeys[index]);
     if (rect == null || image == null) return;
+    final width = placeCacheWidth(context);
+    for (final photo in Places.all[index].photos) {
+      precacheImage(
+        ResizeImage(AssetImage(photo.asset), width: width),
+        context,
+      );
+    }
     _flight.open(
-      PlaceOrigin(index: index, rect: rect, imageHeight: image),
+      PlaceOrigin(
+        index: index,
+        rect: rect,
+        imageHeight: image,
+        photoShift: photoShift,
+      ),
       _stackSize(),
     );
   }
@@ -148,7 +181,9 @@ class _PlacesScreenState extends State<PlacesScreen>
     _flight.removeListener(_onFlight);
     _flight.dispose();
     _hidden.dispose();
+    _scroll.removeListener(_onScroll);
     _scroll.dispose();
+    _offset.dispose();
     _titleFocus.dispose();
     for (final node in _cardFocus) {
       node.dispose();
@@ -165,6 +200,7 @@ class _PlacesScreenState extends State<PlacesScreen>
       hidden: _hidden,
       stackKey: _stackKey,
       scroll: _scroll,
+      offset: _offset,
       frameKeys: _frameKeys,
       imageKeys: _imageKeys,
       focusNodes: _cardFocus,

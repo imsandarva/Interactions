@@ -68,14 +68,14 @@ class _PageDragState extends State<PageDrag> {
       }
       _moved = true;
       if (_paused) {
-        widget.flight.dragBy(total.dy);
+        widget.flight.dragBy(total.dx, total.dy);
       } else {
         widget.flight.beginSettledDrag();
-        widget.flight.dragBy(total.dy);
+        widget.flight.dragBy(total.dx, total.dy);
       }
       return;
     }
-    widget.flight.dragBy(event.delta.dy);
+    widget.flight.dragBy(event.delta.dx, event.delta.dy);
   }
 
   void _up(PointerEvent event) {

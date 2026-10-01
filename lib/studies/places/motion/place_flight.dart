@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/physics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -11,11 +13,15 @@ class PlaceOrigin {
     required this.index,
     required this.rect,
     required this.imageHeight,
+    required this.photoShift,
   });
 
   final int index;
   final Rect rect;
   final double imageHeight;
+
+  /// Where the photo sits inside the card at the moment of the tap.
+  final double photoShift;
 }
 
 enum _Aim { none, open, close }
@@ -34,6 +40,8 @@ class PlaceFlight extends ChangeNotifier {
   var _layoutT = 0.0;
   var _scrimT = 0.0;
   var _shiftY = 0.0;
+  var _shadow = 0.0;
+  var _dragDx = 0.0;
   var _active = false;
   var _dragging = false;
   var _holding = false;
@@ -59,6 +67,7 @@ class PlaceFlight extends ChangeNotifier {
   double get layoutT => _layoutT;
   double get scrimT => _scrimT;
   double get shiftY => _shiftY;
+  double get shadow => _shadow;
   bool get active => _active;
   bool get dragging => _dragging;
   bool get scrubbing => _edge;
@@ -147,6 +156,7 @@ class PlaceFlight extends ChangeNotifier {
     _grabRadius = _radius;
     _grabLayout = _layoutT;
     _grabScrim = _scrimT;
+    _dragDx = 0;
     _dragDy = 0;
     notifyListeners();
   }
@@ -155,37 +165,41 @@ class PlaceFlight extends ChangeNotifier {
     _fromOpen = true;
     _dragging = true;
     _holding = false;
+    _dragDx = 0;
     _dragDy = 0;
     _settle.stop();
   }
 
-  void dragBy(double dy) {
+  /// [dx] is eased. The page follows in both axes once a dismiss has started.
+  void dragBy(double dx, double dy) {
     if (!_active || _origin == null) return;
     _dragging = true;
     _holding = false;
+    _dragDx += dx * PlacesSpec.sideFollow;
+    _dragDy += dy;
     if (reduced) {
-      _shiftY = (_shiftY + dy).clamp(0.0, _screen.height * 0.55);
-      _dragDy = _shiftY;
+      _shiftY = _dragDy.clamp(0.0, _screen.height * 0.55);
       _markCommit(_dragDy);
       notifyListeners();
       return;
     }
     if (_fromOpen) {
-      _dragDy = (_dragDy + dy).clamp(0.0, PlacesSpec.maxTravel);
-      _apply(dragPose(dy: _dragDy, screen: _screen, card: _origin!.rect));
+      _apply(freeDrag(dx: _dragDx, dy: _dragDy, screen: _screen));
     } else {
-      _dragDy += dy;
-      final scale = (1 - _dragDy / 700).clamp(0.82, 1.04);
+      final dist = math.sqrt(_dragDx * _dragDx + _dragDy * _dragDy);
+      final u = (dist / PlacesSpec.liftTravel).clamp(0.0, 1.0);
+      final scale = _lerp(1, PlacesSpec.liftScale, u);
       _bounds = Rect.fromCenter(
-        center: _grabBounds.center + Offset(0, _dragDy),
-        width: _grabBounds.width * scale,
-        height: _grabBounds.height * scale,
+        center: _grabBounds.center + Offset(_dragDx, _dragDy),
+        width: math.max(_grabBounds.width * scale, 1),
+        height: math.max(_grabBounds.height * scale, 1),
       );
-      _radius = (_grabRadius + _dragDy * 0.045).clamp(0.0, 40.0);
-      _layoutT = (_grabLayout - _dragDy / 420).clamp(0.0, 1.0);
-      _scrimT = (_grabScrim - _dragDy / 360).clamp(0.0, 1.0);
+      _radius = _lerp(_grabRadius, PlacesSpec.liftRadius, u).clamp(0.0, 40.0);
+      _layoutT = _lerp(_grabLayout, 0.42, u).clamp(0.0, 1.0);
+      _scrimT = _lerp(_grabScrim, 0, u).clamp(0.0, 1.0);
+      _shadow = u;
     }
-    _markCommit(_fromOpen ? _dragDy : (1 - _layoutT) * PlacesSpec.liftTravel);
+    _markCommit(_dragDy);
     notifyListeners();
   }
 
@@ -195,7 +209,7 @@ class PlaceFlight extends ChangeNotifier {
     _holding = false;
     final flickClose = vy > PlacesSpec.flick;
     final flickOpen = vy < -PlacesSpec.flick;
-    final far = _dragDy > PlacesSpec.commitDistance || (1 - _layoutT) > 0.28;
+    final far = _dragDy > _screen.height * PlacesSpec.commitFraction;
     final closing = flickClose || (!flickOpen && far);
     final speed = (vy.abs() / 520).clamp(0.0, 6.0);
     if (closing) {
@@ -300,6 +314,7 @@ class PlaceFlight extends ChangeNotifier {
     _layoutT = _lerp(_from.layoutT, _to.layoutT, s);
     _scrimT = _lerp(_from.scrimT, _to.scrimT, s);
     _shiftY = _lerp(_from.shiftY, _to.shiftY, s);
+    _shadow = _lerp(_from.shadow, _to.shadow, s);
     notifyListeners();
   }
 
@@ -315,6 +330,7 @@ class PlaceFlight extends ChangeNotifier {
     _edge = false;
     _aim = _Aim.none;
     _pastCommit = false;
+    if (!reduced) HapticFeedback.selectionClick();
     notifyListeners();
   }
 
@@ -325,6 +341,7 @@ class PlaceFlight extends ChangeNotifier {
       layoutT: _layoutT,
       scrimT: _scrimT,
       shiftY: _shiftY,
+      shadow: _shadow,
     );
   }
 
@@ -334,6 +351,7 @@ class PlaceFlight extends ChangeNotifier {
     _layoutT = pose.layoutT;
     _scrimT = pose.scrimT;
     _shiftY = pose.shiftY;
+    _shadow = pose.shadow;
   }
 
   Rect _safe(Rect rect) {
@@ -346,7 +364,7 @@ class PlaceFlight extends ChangeNotifier {
   }
 
   void _markCommit(double distance) {
-    final past = distance > PlacesSpec.commitDistance;
+    final past = distance > _screen.height * PlacesSpec.commitFraction;
     if (past != _pastCommit) HapticFeedback.lightImpact();
     _pastCommit = past;
   }

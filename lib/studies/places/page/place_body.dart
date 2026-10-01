@@ -6,32 +6,64 @@ import 'package:interactions/studies/places/theme/places_style.dart';
 
 /// The words that appear once the card has mostly become the page.
 class PlaceBody extends StatelessWidget {
-  const PlaceBody({required this.place, super.key});
+  const PlaceBody({
+    required this.place,
+    required this.lead,
+    required this.details,
+    required this.rest,
+    super.key,
+  });
 
   final Place place;
+  final double lead;
+  final double details;
+  final double rest;
 
   @override
   Widget build(BuildContext context) {
     final wide = MediaQuery.textScalerOf(context).scale(1) <= 1.3;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        PlacesSpec.padPage,
-        22,
-        PlacesSpec.padPage,
-        8,
-      ),
+      padding: const EdgeInsets.only(top: 22, bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(place.lead, style: PlacesType.body),
+          _Rise(
+            t: lead,
+            child: Text(place.lead, style: PlacesType.body),
+          ),
           const SizedBox(height: 28),
-          wide ? _DetailRow(place: place) : _DetailStack(place: place),
+          _Rise(
+            t: details,
+            child: wide ? _DetailRow(place: place) : _DetailStack(place: place),
+          ),
           const SizedBox(height: 28),
           for (final paragraph in place.more) ...[
-            Text(paragraph, style: PlacesType.body),
+            _Rise(
+              t: rest,
+              child: Text(paragraph, style: PlacesType.body),
+            ),
             const SizedBox(height: 16),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _Rise extends StatelessWidget {
+  const _Rise({required this.t, required this.child});
+
+  final double t;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = t.clamp(0.0, 1.0);
+    return Opacity(
+      opacity: shown,
+      child: Transform.translate(
+        offset: Offset(0, (1 - shown) * PlacesSpec.bodyRise),
+        child: child,
       ),
     );
   }

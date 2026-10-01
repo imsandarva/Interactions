@@ -2,45 +2,33 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:interactions/app/interactions_app.dart';
+import 'package:interactions/studies/places/memory/place_memory.dart';
 import 'package:interactions/studies/places/motion/flight_pose.dart';
 import 'package:interactions/studies/places/motion/places_spec.dart';
 
 void main() {
-  test('a drag from the open page lifts, then lands on the card', () {
+  test('a free drag lifts the page with the finger', () {
     const screen = Size(390, 844);
-    const card = Rect.fromLTWH(20, 180, 350, 460);
 
-    final open = dragPose(dy: 0, screen: screen, card: card);
+    final open = freeDrag(dx: 0, dy: 0, screen: screen);
     expect(open.bounds, Offset.zero & screen);
     expect(open.radius, 0);
-    expect(open.layoutT, 1);
+    expect(open.shadow, 0);
 
-    final lift = dragPose(
-      dy: PlacesSpec.liftTravel,
-      screen: screen,
-      card: card,
-    );
+    final lift = freeDrag(dx: 40, dy: PlacesSpec.liftTravel, screen: screen);
     expect(
       lift.bounds.height,
-      closeTo(screen.height * PlacesSpec.liftScale, 0.01),
+      closeTo(screen.height * PlacesSpec.liftScale, 0.5),
     );
     expect(
       lift.bounds.width,
-      closeTo(screen.width * PlacesSpec.liftScale, 0.01),
+      closeTo(screen.width * PlacesSpec.liftScale, 0.5),
     );
-    expect(lift.bounds.top, PlacesSpec.liftTravel);
     expect(lift.radius, PlacesSpec.liftRadius);
-
-    final landed = dragPose(
-      dy: PlacesSpec.maxTravel,
-      screen: screen,
-      card: card,
-    );
-    expect(landed.bounds, card);
-    expect(landed.radius, PlacesSpec.cardRadius);
-    expect(landed.layoutT, 0);
-    expect(PlacesSpec.fade(0.4, PlacesSpec.bodyStart, PlacesSpec.bodyEnd), 0);
-    expect(PlacesSpec.fade(1, PlacesSpec.bodyStart, PlacesSpec.bodyEnd), 1);
+    expect(lift.shadow, 1);
+    expect(lift.bounds.center.dx, closeTo(screen.width / 2 + 40, 0.5));
+    expect(PlacesSpec.stagger(0.4, 0), 0);
+    expect(PlacesSpec.stagger(1, 2), 1);
   });
 
   testWidgets('A place card grows into the page and shrinks back', (
@@ -51,6 +39,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    PlaceMemory.instance.reset();
     await tester.pumpWidget(const InteractionsApp());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Places'));
@@ -94,6 +83,22 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('place-page')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('place-card-0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('place-save')));
+    await tester.pumpAndSettle();
+    expect(find.text('Saved'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('place-close')));
+    await tester.pumpAndSettle();
+    expect(find.text('Saved'), findsNothing);
+    final mark = tester.widget<Opacity>(
+      find.descendant(
+        of: find.byKey(const ValueKey('place-mark-0')),
+        matching: find.byType(Opacity),
+      ),
+    );
+    expect(mark.opacity, 1);
 
     await tester.pumpWidget(const SizedBox.shrink());
   });
