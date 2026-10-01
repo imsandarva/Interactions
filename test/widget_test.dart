@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:interactions/app/interactions_app.dart';
@@ -16,19 +16,50 @@ void main() {
     expect(find.text('None yet'), findsNothing);
   });
 
-  testWidgets('Give us feedback stays on the invitation', (WidgetTester tester) async {
+  testWidgets('Feedback sheet follows the mood and then thanks you', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(const InteractionsApp());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Feedback'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Give us feedback'));
+    await tester.pumpAndSettle();
 
+    expect(find.text('How was your experience?'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('mood-word'))).data, 'Fine');
+    expect(find.text('Send'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('feedback-send')));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Thanks'), findsNothing);
+    expect(find.byKey(const Key('feedback-sheet')), findsOneWidget);
+
+    await tester.drag(find.byKey(const Key('mood-slider')), const Offset(-220, 0));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(const Key('mood-word'))).data, 'Bad');
+
+    await tester.drag(find.byKey(const Key('mood-slider')), const Offset(360, 0));
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(find.byKey(const Key('mood-word'))).data, 'Great');
+
+    await tester.tap(find.byKey(const Key('feedback-send')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(find.text('Thanks'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('feedback-sheet')), findsNothing);
     expect(find.text('Give us feedback'), findsOneWidget);
-    expect(find.text('One honest\nnote.'), findsOneWidget);
 
     await tester.tap(find.text('Give us feedback'));
     await tester.pumpAndSettle();
-    expect(find.text('Give us feedback'), findsOneWidget);
-    expect(find.text('Bad'), findsNothing);
+    await tester.tap(find.byKey(const Key('feedback-close')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('feedback-sheet')), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets('Pay now morphs into the Plus sheet', (WidgetTester tester) async {

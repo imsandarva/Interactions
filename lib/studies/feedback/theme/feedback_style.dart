@@ -14,6 +14,9 @@ abstract final class FeedbackColors {
   static const lift = Color(0x141C1A17);
   static const glow = Color(0x2EB08968);
   static const glowFade = Color(0x00B08968);
+  static const scrim = Color(0xFF1C1A17);
+  static const thumb = Color(0xFFFFFCF8);
+  static const thumbShadow = Color(0x241C1A17);
 }
 
 abstract final class FeedbackType {
@@ -49,5 +52,33 @@ abstract final class FeedbackType {
     letterSpacing: -0.25,
     color: FeedbackColors.onInk,
     decoration: TextDecoration.none,
+  );
+  static const question = TextStyle(
+    fontFamily: 'Inter',
+    fontWeight: FontWeight.w500,
+    fontSize: 17.5,
+    height: 1.25,
+    letterSpacing: -0.25,
+  );
+  static const moodWord = TextStyle(
+    fontFamily: 'Inter',
+    fontWeight: FontWeight.w600,
+    fontSize: 32,
+    height: 1.05,
+    letterSpacing: -0.7,
+  );
+  static const caption = TextStyle(
+    fontFamily: 'Inter',
+    fontWeight: FontWeight.w500,
+    fontSize: 13,
+    height: 1.2,
+    letterSpacing: -0.1,
+  );
+  static const captionOn = TextStyle(
+    fontFamily: 'Inter',
+    fontWeight: FontWeight.w600,
+    fontSize: 13,
+    height: 1.2,
+    letterSpacing: -0.15,
   );
 }

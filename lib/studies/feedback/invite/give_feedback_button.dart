@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:interactions/studies/feedback/copy/feedback_copy.dart';
 import 'package:interactions/studies/feedback/theme/feedback_style.dart';
 
-/// The only action on the page. Press settles here until the prompt exists.
+/// The invitation. A short press, then the sheet takes over.
 class GiveFeedbackButton extends StatefulWidget {
   const GiveFeedbackButton({required this.onPressed, super.key});
 
