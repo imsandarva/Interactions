@@ -1,3 +1,4 @@
+import 'package:interactions/studies/feedback/feedback_screen.dart';
 import 'package:interactions/studies/payment/payment_screen.dart';
 import 'package:interactions/studies/study.dart';
 
@@ -8,6 +9,11 @@ abstract final class StudyRegistry {
       title: 'Payment',
       note: 'Pay for Plus.',
       page: (_) => const PaymentScreen(),
+    ),
+    Study(
+      title: 'Feedback',
+      note: 'How did it feel.',
+      page: (_) => const FeedbackScreen(),
     ),
   ];
 }

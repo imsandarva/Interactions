@@ -10,8 +10,25 @@ void main() {
 
     expect(find.text('Interactions'), findsOneWidget);
     expect(find.text('Payment'), findsOneWidget);
+    expect(find.text('Feedback'), findsOneWidget);
     expect(find.text('01'), findsOneWidget);
+    expect(find.text('02'), findsOneWidget);
     expect(find.text('None yet'), findsNothing);
+  });
+
+  testWidgets('Give us feedback stays on the invitation', (WidgetTester tester) async {
+    await tester.pumpWidget(const InteractionsApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Feedback'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Give us feedback'), findsOneWidget);
+    expect(find.text('One honest\nnote.'), findsOneWidget);
+
+    await tester.tap(find.text('Give us feedback'));
+    await tester.pumpAndSettle();
+    expect(find.text('Give us feedback'), findsOneWidget);
+    expect(find.text('Bad'), findsNothing);
   });
 
   testWidgets('Pay now morphs into the Plus sheet', (WidgetTester tester) async {
