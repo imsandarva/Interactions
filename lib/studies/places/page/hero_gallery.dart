@@ -10,10 +10,10 @@ import 'package:interactions/studies/places/page/photo_indicator.dart';
 class HeroGallery extends StatefulWidget {
   const HeroGallery({
     required this.place,
-    required this.viewport,
     required this.photoHeight,
     required this.shift,
     required this.extra,
+    required this.indicatorBottom,
     required this.interactive,
     required this.reduced,
     required this.indicator,
@@ -21,10 +21,12 @@ class HeroGallery extends StatefulWidget {
   });
 
   final Place place;
-  final double viewport;
   final double photoHeight;
   final double shift;
   final double extra;
+
+  /// Distance from the photograph's bottom edge up to the marks.
+  final double indicatorBottom;
   final bool interactive;
   final bool reduced;
   final double indicator;
@@ -96,6 +98,11 @@ class _HeroGalleryState extends State<HeroGallery> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
+        final dy = ShiftedPhoto.appliedShift(
+          widget.shift,
+          widget.extra,
+          widget.photoHeight,
+        );
         final frame = ShiftedPhoto(
           height: widget.photoHeight,
           shift: widget.shift,
@@ -114,33 +121,32 @@ class _HeroGalleryState extends State<HeroGallery> {
             behavior: HitTestBehavior.opaque,
             onTapUp: (details) => _tap(details, width),
             child: SizedBox(
-              height: widget.viewport,
+              height: widget.photoHeight,
               width: width,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: widget.photoHeight,
-                    child: frame,
-                  ),
-                  Positioned(
-                    left: 20,
-                    right: 20,
-                    bottom: 20,
-                    child: IgnorePointer(
-                      child: Opacity(
-                        opacity: widget.indicator,
-                        child: PhotoIndicator(
-                          count: place.photos.length,
-                          index: _index,
+              child: ClipRect(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    frame,
+                    Positioned(
+                      left: 20,
+                      right: 20,
+                      bottom: widget.indicatorBottom,
+                      child: IgnorePointer(
+                        child: Transform.translate(
+                          offset: Offset(0, dy),
+                          child: Opacity(
+                            opacity: widget.indicator.clamp(0.0, 1.0),
+                            child: PhotoIndicator(
+                              count: place.photos.length,
+                              index: _index,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

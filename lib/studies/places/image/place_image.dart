@@ -61,13 +61,19 @@ class ShiftedPhoto extends StatelessWidget {
   final double extra;
   final Widget child;
 
+  /// The shift actually applied, so an overlay can move with the photograph.
+  static double appliedShift(double shift, double extra, double height) {
+    final room = extra.clamp(0.0, height);
+    return shift.clamp(-room / 2, room / 2);
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
         final room = extra.clamp(0.0, height);
-        final dy = shift.clamp(-room / 2, room / 2);
+        final dy = appliedShift(shift, extra, height);
         return ClipRect(
           child: SizedBox(
             height: height,

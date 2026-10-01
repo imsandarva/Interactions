@@ -16,6 +16,10 @@ abstract final class PlacesSpec {
   static const listRest = 0.96;
   static const scrimPeak = 0.12;
   static const sheetOverlap = 28.0;
+  static const sheetRadius = 28.0;
+  static const titleGap = 28.0;
+  static const indicatorGap = 20.0;
+  static const saveFade = 96.0;
   static const tintMix = 0.05;
   static const cardParallax = 0.12;
   static const heroFraction = 0.535;

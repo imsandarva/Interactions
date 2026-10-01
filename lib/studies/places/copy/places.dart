@@ -74,14 +74,14 @@ abstract final class Places {
   static final all = <Place>[
     Place(
       id: 0,
-      title: 'Quiet Hours in Kyoto',
+      title: 'Kyoto at Dusk',
       country: 'Japan',
-      detail: 'Temples & tea',
+      detail: 'Evening light',
       lead:
-          'Morning arrives before the city does. Steam lifts off the tea, and the temple path stays empty a little longer.',
+          'The city softens as the light goes pink. Hills hold the last of the sun, and the streets below stay quiet a little longer.',
       more: [
-        'You walk without a plan. A side street, a paper screen left open, the sound of a broom on stone.',
-        'Nothing needs deciding until the light has warmed the wood.',
+        'You walk without a plan. A side street, a window still lit, the sound of a shop closing.',
+        'Nothing needs deciding until the light has left the hills.',
       ],
       bestTime: 'March to May',
       stay: '3 nights',

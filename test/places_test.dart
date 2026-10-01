@@ -57,7 +57,7 @@ void main() {
 
     expect(find.text('Save this place'), findsOneWidget);
     expect(
-      find.textContaining('Morning arrives before the city'),
+      find.textContaining('The city softens as the light'),
       findsOneWidget,
     );
     expect(
@@ -69,10 +69,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.textContaining('Morning arrives before the city'),
+      find.textContaining('The city softens as the light'),
       findsNothing,
     );
-    expect(find.text('Quiet Hours in Kyoto'), findsOneWidget);
+    expect(find.text('Kyoto at Dusk'), findsOneWidget);
     expect(find.byKey(const Key('place-page')), findsNothing);
 
     await tester.tap(find.byKey(const ValueKey('place-card-0')));

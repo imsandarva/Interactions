@@ -70,7 +70,7 @@ class _FlightViewState extends State<FlightView>
       layoutT,
     )!;
     final overlap = PlacesSpec.sheetOverlap * (flight.reduced ? 1 : layoutT);
-    final panelRadius = 28.0 * (flight.reduced ? 1 : layoutT);
+    final panelRadius = PlacesSpec.sheetRadius * (flight.reduced ? 1 : layoutT);
     final tint =
         (flight.reduced ? 1.0 : PlacesSpec.fade(layoutT, 0, 0.7)) *
         PlacesSpec.tintMix;
@@ -88,12 +88,22 @@ class _FlightViewState extends State<FlightView>
       layoutT,
     )!;
     final pad = lerpDouble(PlacesSpec.padCard, PlacesSpec.padPage, layoutT)!;
-    final titleTop = lerpDouble(16, 20, layoutT)!;
+    final titleTop = lerpDouble(
+      16,
+      PlacesSpec.titleGap,
+      flight.reduced ? 1 : layoutT,
+    )!;
     final close = flight.reduced
         ? 1.0
         : PlacesSpec.fade(layoutT, PlacesSpec.closeStart, PlacesSpec.closeEnd);
     final wash = PlacesSpec.fade(layoutT, 0.35, 0.85);
-    final indicator = flight.reduced ? 1.0 : PlacesSpec.fade(layoutT, 0.92, 1);
+    final openMarks = flight.reduced ? 1.0 : PlacesSpec.fade(layoutT, 0.92, 1);
+    final cover =
+        (_offset * PlacesSpec.parallax / PlacesSpec.indicatorGap).clamp(
+          0.0,
+          1.0,
+        );
+    final indicator = openMarks * (flight.reduced ? 1 : 1 - cover);
     final cardExtra = origin.imageHeight * 0.16;
     final heroExtra = imageHeight * 0.55;
     final extra = lerpDouble(cardExtra, heroExtra, layoutT)!;
@@ -104,7 +114,6 @@ class _FlightViewState extends State<FlightView>
     final photoShift = flight.reduced
         ? 0.0
         : lerpDouble(origin.photoShift, scrollShift, layoutT)!;
-    final viewport = (imageHeight - overlap).clamp(1.0, imageHeight);
     final safe = MediaQuery.paddingOf(context);
     final canScroll = flight.settledOpen && !flight.dragging;
     final bar = _bar.value;
@@ -122,6 +131,8 @@ class _FlightViewState extends State<FlightView>
             child: CustomScrollView(
               controller: _scroll,
               primary: false,
+              // Later slivers paint above earlier ones, so the sheet covers the photo.
+              paintOrder: SliverPaintOrder.lastIsTop,
               physics: canScroll
                   ? const ClampingScrollPhysics(
                       parent: AlwaysScrollableScrollPhysics(),
@@ -131,31 +142,37 @@ class _FlightViewState extends State<FlightView>
                 SliverToBoxAdapter(
                   child: HeroGallery(
                     place: place,
-                    viewport: viewport,
                     photoHeight: imageHeight,
                     shift: photoShift,
                     extra: extra,
+                    indicatorBottom: overlap + PlacesSpec.indicatorGap,
                     interactive: flight.settledOpen,
                     reduced: flight.reduced,
                     indicator: indicator,
                   ),
                 ),
                 SliverToBoxAdapter(
-                  child: _Sheet(
-                    place: place,
-                    surface: surface,
-                    radius: panelRadius,
-                    pad: pad,
-                    titleTop: titleTop,
-                    titleSize: titleSize,
-                    metaSize: metaSize,
-                    titleFocus: widget.titleFocus,
-                    lead: lead,
-                    details: details,
-                    rest: rest,
+                  // Pull the sheet up over the photograph. It stays in front.
+                  child: Transform.translate(
+                    offset: Offset(0, -overlap),
+                    child: _Sheet(
+                      place: place,
+                      surface: surface,
+                      radius: panelRadius,
+                      pad: pad,
+                      titleTop: titleTop,
+                      titleSize: titleSize,
+                      metaSize: metaSize,
+                      titleFocus: widget.titleFocus,
+                      lead: lead,
+                      details: details,
+                      rest: rest,
+                    ),
                   ),
                 ),
-                SliverToBoxAdapter(child: SizedBox(height: safe.bottom + 108)),
+                SliverToBoxAdapter(
+                  child: SizedBox(height: safe.bottom + 200 - overlap),
+                ),
               ],
             ),
           ),
@@ -452,14 +469,19 @@ class _SaveBar extends StatelessWidget {
       children: [
         IgnorePointer(
           child: SizedBox(
-            height: 28,
+            height: PlacesSpec.saveFade,
             width: double.infinity,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [surface.withValues(alpha: 0), surface],
+                  colors: [
+                    surface.withValues(alpha: 0),
+                    surface.withValues(alpha: 0.88),
+                    surface,
+                  ],
+                  stops: const [0, 0.52, 0.74],
                 ),
               ),
             ),
